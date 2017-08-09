@@ -149,9 +149,7 @@ public class HoudiniAssetInput : HoudiniAsset
 
 	protected override int buildCreateAsset( HoudiniProgressBar progress_bar )
 	{
-		// Remove spaces in the node name
-		string inputName = transform.name.Replace(' ', '_');
-		return HoudiniHost.createInputAsset( inputName );
+		return HoudiniHost.createInputAsset( transform.name );
 	}
 
 	protected override void buildFullBuildCustomWork( ref HoudiniProgressBar progress_bar, bool is_duplication )
@@ -172,8 +170,8 @@ public class HoudiniAssetInput : HoudiniAsset
 	{
 		try
 		{
-			int object_id = prObjectNodeId;
-			int geo_id = prAssetId;
+			const int object_id = 0;
+			const int geo_id = 0;
 
 			// Write marshalled geo to Input Asset.
 			HoudiniAssetUtility.setMesh(

@@ -254,8 +254,6 @@ public class HoudiniGeoAttributeManagerGUI
 				ray.origin = myTempCamera.transform.position;
 
 				MeshCollider mesh_collider  = myManager.prMeshCollider;
-				if ( !mesh_collider.enabled )
-					mesh_collider.enabled = true;
 				RaycastHit hit_info;
 				mesh_collider.Raycast( ray, out hit_info, myIntersectionRayLength );
 
@@ -550,11 +548,7 @@ public class HoudiniGeoAttributeManagerGUI
 	private Vector3 getMousePosition( ref Event current_event )
 	{
 		Vector3 mouse_position = current_event.mousePosition;
-
-		// We need to take PixelPerPoints into consideration for Retina displays
-		float fPixelsPerPoints = HoudiniGUIUtility.getPixelsPerPoint();
-		mouse_position *= fPixelsPerPoints;
-
+		
 		// Camera.current.pixelHeight != Screen.height for some reason.
 		mouse_position.y = myTempCamera.pixelHeight - mouse_position.y;
 
@@ -883,12 +877,9 @@ public class HoudiniGeoAttributeManagerGUI
 			help_text = "Scene window doesn't have focus. Hotkeys may not work. Right click anywhere in the scene to focus.";
 
 		Color original_color		= GUI.color;
-
-		// We need to take PixelsPerPoint into consideration for Retina Displays
-		float fPixelsPerPoints      = HoudiniGUIUtility.getPixelsPerPoint();
-
-		float scene_width			= myTempCamera.pixelWidth / fPixelsPerPoints;
-		float scene_height			= myTempCamera.pixelHeight / fPixelsPerPoints;
+		
+		float scene_width			= myTempCamera.pixelWidth;
+		float scene_height			= myTempCamera.pixelHeight;
 		float border_width			= myActiveBorderWidth;
 		float border_padding		= mySceneUIBorderPadding;
 		float border_total			= border_width + border_padding;
@@ -942,10 +933,7 @@ public class HoudiniGeoAttributeManagerGUI
 
 		// Start Drawing --------------------------------------------------------------------------------------------
 		Handles.BeginGUI();
-
-		float screenWidth = Screen.width / fPixelsPerPoints;
-		float screenHeight = Screen.height / fPixelsPerPoints;
-		GUILayout.BeginArea( new Rect( 0, 0, screenWidth, screenHeight ) );
+		GUILayout.BeginArea( new Rect( 0, 0, Screen.width, Screen.height ) );
 
 		// Draw the background boxes for the Scene UI.
 		GUI.color = box_color;
@@ -1007,8 +995,8 @@ public class HoudiniGeoAttributeManagerGUI
 			border_texture.SetPixel( 0, 0, new Color( box_color.r, box_color.g, box_color.b, 0.6f ) );
 			border_texture.Apply();
 
-			float width					= scene_width;
-			float height				= scene_height;
+			float width					= myTempCamera.pixelWidth;
+			float height				= myTempCamera.pixelHeight;
 
 			if ( myManager.prCurrentMode == HoudiniGeoAttributeManager.Mode.NONE )
 			{

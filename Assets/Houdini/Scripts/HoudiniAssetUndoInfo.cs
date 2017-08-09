@@ -52,9 +52,6 @@ public class HoudiniAssetUndoInfo : ScriptableObject
 	public bool importTemplatedGeos;
 	public bool splitGeosByGroupOverride;
 	public bool splitGeosByGroup;
-	public bool splitPointsGeosByGroupOverride;
-	public bool splitPointsByVertexAttribute;
-	public bool splitPointsByVertexAttributeOverride;
 	public bool omitPartNameEnumeration;
 
 	// Bake Settings
@@ -79,8 +76,6 @@ public class HoudiniAssetUndoInfo : ScriptableObject
 		importTemplatedGeos 			= asset.prImportTemplatedGeos;
 		splitGeosByGroupOverride		= asset.prSplitGeosByGroupOverride;
 		splitGeosByGroup				= asset.prSplitGeosByGroup;
-		splitPointsByVertexAttribute    = asset.prSplitPointsByVertexAttribute;
-		splitPointsByVertexAttributeOverride = asset.prSplitPointsByVertexAttributeOverride;
 		omitPartNameEnumeration			= asset.prOmitPartNameEnumeration;
 		bakeStartTime					= asset.prBakeStartTime;
 		bakeEndTime						= asset.prBakeEndTime;

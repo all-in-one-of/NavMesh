@@ -1,0 +1,18 @@
+PGEOMETRY V5
+NPoints 6 NPrims 5
+NPointGroups 0 NPrimGroups 0
+NPointAttrib 0 NVertexAttrib 0 NPrimAttrib 0 NAttrib 0
+0.5 -0.25 -0.5 1
+-0.5 -0.25 -0.5 1
+0.5 0.25 -0.5 1
+0.5 -0.25 0.5 1
+-0.5 -0.25 0.5 1
+0.5 0.25 0.5 1
+Run 5 Poly
+ 3 < 0 2 1
+ 3 < 3 4 5
+ 4 < 0 1 4 3
+ 4 < 1 2 5 4
+ 4 < 2 0 3 5
+beginExtra
+endExtra

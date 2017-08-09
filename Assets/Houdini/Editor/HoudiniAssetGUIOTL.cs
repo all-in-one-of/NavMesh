@@ -88,8 +88,6 @@ public partial class HoudiniAssetGUIOTL : HoudiniAssetGUI
 			{
 				myGeoAttributeManagerGUI = null;
 				myAsset.buildAll();
-				if ( myAsset.prGeoInputCount > 0 || myAsset.prTransformInputCount > 0 )
-					myAsset.buildClientSide();
 			}
 	
 			if ( GUILayout.Button( "Recook" ) )
@@ -380,22 +378,6 @@ public partial class HoudiniAssetGUIOTL : HoudiniAssetGUI
 					"This change will take affect only after a full asset rebuild.",
 					"Ok" ), false,
 				!myAsset.prSplitGeosByGroupOverride, " (check the override checkbox to enable)" );
-		}
-
-		HoudiniGUI.separator();
-
-		// Split Points By Vertex Attributes Toggle
-		{
-			createToggleForProperty(
-				"split_points_by_vertex_attribute_override", "Override Split Points by Vertex Attributes", "prSplitPointsByVertexAttributeOverride",
-				ref myUndoInfo.splitPointsByVertexAttributeOverride, null );
-			createToggleForProperty(
-				"split_points_by_vertex_attribute", "Split Points by Vertex Attributes", "prSplitPointsByVertexAttribute",
-				ref myUndoInfo.splitPointsByVertexAttribute, () => EditorUtility.DisplayDialog(
-					"Rebuild Required",
-					"This change will take affect only after a full asset rebuild.",
-					"Ok"), false,
-				!myAsset.prSplitPointsByVertexAttributeOverride, " (check the override checkbox to enable)");
 		}
 
 		HoudiniGUI.separator();

@@ -291,7 +291,7 @@ public class HoudiniAssetOTL : HoudiniAsset
 			if ( needs_init )
 			{
 				init(
-					prAssetId, prNodeId, prAsset,
+					prAssetId, prObjectInfo.nodeId, prAsset,
 					prObjectInfo.nodeId, prObjectInfo.name, prObjectInfo.isVisible );
 			}
 

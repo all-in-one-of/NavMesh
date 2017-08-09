@@ -525,10 +525,7 @@ public class HoudiniParms : MonoBehaviour, ISerializationCallbackReceiver
 		}
 		else if ( mesh_filter && mesh_filter.sharedMesh )
 		{
-			// We need to remove spaces in the input name
-			string inputName = input_object.name.Replace(' ', '_');
-
-			parm_input.inputNodeId = HoudiniHost.createInputNode( inputName );
+			parm_input.inputNodeId = HoudiniHost.createInputNode( input_object.name );
 			Mesh mesh = mesh_filter.sharedMesh;
 			HoudiniAssetUtility.setMesh(
 				parm_input.inputNodeId, 0, parm_input.inputNodeId, ref mesh, null, null );

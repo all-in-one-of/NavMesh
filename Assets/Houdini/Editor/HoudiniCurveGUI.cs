@@ -582,11 +582,7 @@ public class HoudiniCurveGUI : Editor
 	private Vector3 getMousePosition( ref Event current_event )
 	{
 		Vector3 mouse_position = current_event.mousePosition;
-
-		// We need to take PixelPerPoints into consideration for Retina displays
-		float fPixelsPerPoints = HoudiniGUIUtility.getPixelsPerPoint();
-		mouse_position *= fPixelsPerPoints;
-
+		
 		// Camera.current.pixelHeight != Screen.height for some reason.
 		mouse_position.y = myTempCamera.pixelHeight - mouse_position.y;
 
@@ -914,12 +910,10 @@ public class HoudiniCurveGUI : Editor
 		if ( !mySceneWindowHasFocus && myCurve.prEditable )
 			help_text = "Scene window doesn't have focus. Hotkeys may not work. Right click anywhere in the scene to focus.";
 
-		// We need to take PixelsPerPoint into consideration for Retina Displays
-		float fPixelsPerPoints = HoudiniGUIUtility.getPixelsPerPoint();
-
 		Color original_color		= GUI.color;
-		float scene_width			= myTempCamera.pixelWidth / fPixelsPerPoints;
-		float scene_height			= myTempCamera.pixelHeight / fPixelsPerPoints;
+		
+		float scene_width			= myTempCamera.pixelWidth;
+		float scene_height			= myTempCamera.pixelHeight;
 		float border_width			= myActiveBorderWidth;
 		float border_padding		= mySceneUIBorderPadding;
 		float border_total			= border_width + border_padding;
@@ -973,9 +967,7 @@ public class HoudiniCurveGUI : Editor
 
 		// Start Drawing --------------------------------------------------------------------------------------------
 		Handles.BeginGUI();
-		float screenWidth = Screen.width / fPixelsPerPoints;
-		float screenHeight = Screen.height / fPixelsPerPoints;
-		GUILayout.BeginArea( new Rect( 0, 0, screenWidth, screenHeight ) );
+		GUILayout.BeginArea( new Rect( 0, 0, Screen.width, Screen.height ) );
 
 		// Draw the background boxes for the Scene UI.
 		GUI.color = box_color;
@@ -1037,8 +1029,8 @@ public class HoudiniCurveGUI : Editor
 			border_texture.SetPixel( 0, 0, new Color( box_color.r, box_color.g, box_color.b, 0.6f ) );
 			border_texture.Apply();
 
-			float width					= scene_width;
-			float height				= scene_height;
+			float width					= myTempCamera.pixelWidth;
+			float height				= myTempCamera.pixelHeight;
 
 			if ( myCurve.prCurrentMode == HoudiniCurve.Mode.NONE )
 			{

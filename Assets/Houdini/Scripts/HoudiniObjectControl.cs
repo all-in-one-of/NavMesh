@@ -135,42 +135,19 @@ public class HoudiniObjectControl : HoudiniControl
 
 		if ( reload_asset || object_info.haveGeosChanged )
 		{
-			// Get the GeoInfos of the display geo node
-			HAPI_GeoInfo display_geo_info = HoudiniHost.getDisplayGeoInfo( prObjectId );
-			int GeoCount = object_info.geoCount = 1;
-
+			// TODO: Add back support for templated geos and curve SOPs.
+			HAPI_GeoInfo geo_info = HoudiniHost.getDisplayGeoInfo( prObjectId );
+			object_info.geoCount = 1;
+			
 			// Add new geos as needed.
-			while ( myGeos.Count < GeoCount )
-				myGeos.Add( createGeo( display_geo_info.nodeId ) );
-
-			int node_id = object_info.nodeId;
-			if ( prAsset.prNodeInfo.type == HAPI_NodeType.HAPI_NODETYPE_SOP )
-				node_id = display_geo_info.nodeId;
-
-			// Look for editable nodes inside the network/the object
-			const bool recursive = true;
-			int[] editable_networks = HoudiniHost.getChildNodeList(
-				node_id,
-				(int)HAPI_NodeType.HAPI_NODETYPE_SOP,
-				(int)HAPI_NodeFlags.HAPI_NODEFLAGS_EDITABLE,
-				recursive);
-
-			// Add the editable nodes to it
-			for ( int n = 0; n < editable_networks.Length; n++ )
-			{
-				// The editable node has to be cooked first
-				HoudiniHost.cookNode( editable_networks[ n ] );
-
-				HAPI_GeoInfo editGeoInfo = HoudiniHost.getGeoInfo( editable_networks[ n ] );
-				myGeos.Add( createGeo( editGeoInfo.nodeId ) );
-				GeoCount++;
-			}
+			while ( myGeos.Count < object_info.geoCount )
+				myGeos.Add( createGeo( geo_info.nodeId ) );
 
 			// Remove stale geos.
-			while ( myGeos.Count > GeoCount )
+			while ( myGeos.Count > object_info.geoCount )
 			{
-				HoudiniAssetUtility.destroyGameObject( myGeos[ GeoCount ] );
-				myGeos.RemoveAt( GeoCount );
+				HoudiniAssetUtility.destroyGameObject( myGeos[ object_info.geoCount ] );
+				myGeos.RemoveAt( object_info.geoCount );
 			}
 
 			// Refresh all geos.

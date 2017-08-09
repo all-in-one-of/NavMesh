@@ -100,7 +100,7 @@ public abstract class HoudiniAsset : HoudiniObjectControl
 	// Parameters ---------------------------------------------------------------------------------------------------
 
 	public HoudiniPresetMap prPresetsMap 
-	{
+	{					
 		get 
 		{ 
 			if ( myPresetsMap == null )
@@ -114,26 +114,7 @@ public abstract class HoudiniAsset : HoudiniObjectControl
 	}
 
 	// Inputs -------------------------------------------------------------------------------------------------------
-    public int 						prTransformInputCount {			get { return myTransformInputCount; } 
-																	set { myTransformInputCount = value; } }
-	public int						prGeoInputCount {				get { return myGeoInputCount; } 
-																	set { myGeoInputCount = value; } }
-	public List< int >				prGeoInputsTransformTypes {		get { return myGeoInputsTransformTypes; }
-																	set { myGeoInputsTransformTypes = value; } }
-	
-	public List< HoudiniAsset >		prDownStreamTransformAssets {	get { return myDownStreamTransformAssets; } 
-																	set { myDownStreamTransformAssets = value; } }
-	public List< HoudiniAsset >		prUpStreamTransformAssets {		get { return myUpStreamTransformAssets; } 
-																	set { myUpStreamTransformAssets = value; } }
-	public List< GameObject >		prUpStreamTransformObjects {	get { return myUpStreamTransformObjects; } 
-																	set { myUpStreamTransformObjects = value; } }
-	
-	public List< HoudiniAsset >		prUpStreamGeoAssets {			get { return myUpStreamGeoAssets; } 
-																	set { myUpStreamGeoAssets = value; } }
-	public List< GameObject >		prUpStreamGeoObjects {			get { return myUpStreamGeoObjects; } 
-																	set { myUpStreamGeoObjects = value; } }
-	public List< int >				prUpStreamGeoInputAssetIds {	get { return myUpStreamGeoInputAssetIds; } 
-																	set { myUpStreamGeoInputAssetIds = value; } }
+
 	public List< HoudiniAsset >		prDownStreamAssets {			get { return myDownStreamAssets; } 
 																	set { myDownStreamAssets = value; } }
 
@@ -251,12 +232,8 @@ public abstract class HoudiniAsset : HoudiniObjectControl
 														? mySplitGeosByGroup
 														: HoudiniHost.prSplitGeosByGroup; } 
 												set { mySplitGeosByGroup = value; } }
-	public bool prSplitPointsByVertexAttributeOverride {	get { return mySplitPointsByVertexAttributesOverride; }
-															set { mySplitPointsByVertexAttributesOverride = value; } }
-	public bool prSplitPointsByVertexAttribute { get { return mySplitPointsByVertexAttributesOverride
-																? mySplitPointsByVertexAttributes
-																: HoudiniHost.prSplitPointsByVertexAttributes; }
-												set { mySplitPointsByVertexAttributes = value; } }
+	public bool prSplitPointsByVertexAttribute { get { return HoudiniHost.prSplitPointsByVertexAttributes; }
+												private set { } }
 
 	public bool prOmitPartNameEnumeration {		get { return myOmitPartNameEnumeration; }
 												set { myOmitPartNameEnumeration = value; } }
@@ -340,161 +317,6 @@ public abstract class HoudiniAsset : HoudiniObjectControl
 			
 		}
 		return null;
-	}
-
-    // Transform related connection methods -------------------------------------------------------
-
-	public void addAssetAsTransformInput( HoudiniAsset asset, int index )
-	{
-		if ( prUpStreamTransformAssets[ index ] == asset )
-			return;
-		
-		prUpStreamTransformAssets[ index ] = asset;
-        HoudiniHost.connectNodeInput(prNodeId, index, asset.prNodeId);
-		//HoudiniHost.connectAssetTransform( asset.prAssetId, prAssetId, index );
-		asset.addDownstreamTransformAsset( this );
-	}
-	
-	public void removeTransformInput( int index )
-	{
-		if ( prUpStreamTransformAssets[ index ] != null )
-		{
-			prUpStreamTransformAssets[ index ].removeDownstreamTransformAsset( this );
-            HoudiniHost.disconnectNodeInput( prNodeId, index );
-			// HoudiniHost.disconnectAssetTransform( prAssetId, index );
-			prUpStreamTransformAssets[ index ] = null;
-		}
-	}
-	
-	public void removeAssetAsTransformInput( HoudiniAsset asset )
-	{
-		for ( int ii = 0; ii < prUpStreamTransformAssets.Count; ++ii )
-		{
-			if ( prUpStreamTransformAssets[ii] == asset )
-			{
-				prUpStreamTransformAssets[ ii ] = null;
-                HoudiniHost.disconnectNodeInput( prNodeId, ii );
-				//HoudiniHost.disconnectAssetTransform( prAssetId, ii );
-				
-				asset.removeDownstreamTransformAsset( this );
-			}
-		}
-	}
-	
-	public int getAssetTransformConnectionIndex( HoudiniAsset asset )
-	{
-		for ( int ii = 0; ii < prUpStreamTransformAssets.Count; ii++ )
-			if ( prUpStreamTransformAssets[ii] == asset )
-				return ii;
-		
-		return -1;
-	}
-	
-	public void addDownstreamTransformAsset( HoudiniAsset asset )
-	{
-		foreach ( HoudiniAsset downstream_asset in prDownStreamTransformAssets )
-			if ( downstream_asset == asset )
-				return;
-		
-		prDownStreamTransformAssets.Add( asset );
-	}
-	
-	public void removeDownstreamTransformAsset( HoudiniAsset asset )
-	{
-		prDownStreamTransformAssets.Remove( asset );
-	}
-	
-	// Geometry related connection methods -------------------------------------------------------
-	
-	public void addAssetAsGeoInput( HoudiniAsset asset, int object_index, int index )
-	{
-		prUpStreamGeoAssets[ index ] = asset;
-
-        HoudiniHost.connectNodeInput( prNodeId, index, asset.prNodeId );
-        //HoudiniHost.connectAssetGeometry( asset.prAssetId, object_index, prAssetId, index );
-        asset.addDownstreamAsset( this );
-
-		// We have to save the presets here because this connection might change a parm
-		// and we want to save it.
-#if UNITY_EDITOR
-		if ( !EditorApplication.isPlaying )
-			savePreset();
-#endif // UNITY_EDITOR
-	}
-
-	public void addGeoAsGeoInput( GameObject obj, int index )
-	{
-		addGeoAsGeoInput( obj, index, false );
-	}
-	public void addGeoAsGeoInput( GameObject obj, int index, bool is_duplication )
-	{
-		if ( is_duplication ||
-			prUpStreamGeoInputAssetIds[ index ] < 0 || 
-			!HoudiniHost.isNodeValid( prUpStreamGeoInputAssetIds[ index ], myUpStreamGeoInputAssetValidationIds[ index ] ) )
-		{
-			// Remove spaces in the node name
-			string inputName = prAssetName + "_GeoInput_" + index;
-			inputName = inputName.Replace(' ', '_');
-
-			prUpStreamGeoInputAssetIds[index] = HoudiniHost.createInputNode( inputName );
-
-			HAPI_NodeInfo node_info = HoudiniHost.getNodeInfo(prUpStreamGeoInputAssetIds[index]);
-			myUpStreamGeoInputAssetValidationIds[index] = node_info.uniqueHoudiniNodeId;
-		}
-
-		// Add the geo info onto the asset.
-		if ( !obj.GetComponent< MeshFilter >() )
-		{
-			Debug.LogWarning( "No mesh filter found on input geo object: " + obj.name );
-			return;
-		}
-		Mesh mesh = obj.GetComponent< MeshFilter >().sharedMesh;
-		HoudiniAssetUtility.setMesh(
-			prUpStreamGeoInputAssetIds[ index ], 0, prUpStreamGeoInputAssetIds[index], ref mesh, null, null );
-
-        // Set the asset transform from the source GameObject transform.
-        HAPI_TransformEuler trans = HoudiniAssetUtility.getHapiTransform(obj.transform.localToWorldMatrix);
-        HAPI_NodeInfo input_node_info = HoudiniHost.getNodeInfo( prUpStreamGeoInputAssetIds[index] );
-        HoudiniHost.setObjectTransform(input_node_info.parentId, ref trans);
-
-        HoudiniHost.connectNodeInput(prNodeId, index, prUpStreamGeoInputAssetIds[index]);
-        //HoudiniHost.connectAssetGeometry( prUpStreamGeoInputAssetIds[ index ], 0, prAssetId, index );
-
-        //HAPI_NodeInfo node_info = HoudiniHost.getNodeInfo(prUpStreamGeoInputAssetIds[index]);
-        //myUpStreamGeoInputAssetValidationIds[index] = node_info.uniqueHoudiniNodeId;
-
-        // We have to save the presets here because this connection might change a parm
-        // and we want to save it.
-#if UNITY_EDITOR
-        if ( !EditorApplication.isPlaying )
-			savePreset();
-#endif // UNITY_EDITOR
-	}
-
-	public void updateGeoInputTransformType( int input_index, int newTransformType )
-	{
-		if ( ( input_index < 0 ) || ( input_index >= prGeoInputCount ) )
-			return;
-
-		try
-		{
-			int inputNodeID = HoudiniHost.queryNodeInput( prNodeId, input_index );
-			if ( inputNodeID < 0 )
-				return;
-
-			string sXformType = "xformtype";
-			HoudiniHost.setParmIntValue( inputNodeID, sXformType, 0, newTransformType );
-
-			prGeoInputsTransformTypes[ input_index ] = newTransformType;
-		}
-		catch ( HoudiniError )
-		{
-			// Do nothing.
-		}
-		catch ( Exception error )
-		{
-			Debug.LogError( error.ToString() );
-		}
 	}
 
 #if UNITY_EDITOR
@@ -596,57 +418,7 @@ public abstract class HoudiniAsset : HoudiniObjectControl
 #endif // UNITY_EDITOR
 	}
 
-    public bool isGeoInputValid(int index)
-    {
-        if (prUpStreamGeoObjects[index] != null)
-        {
-            return prUpStreamGeoAssets[index] != null ||
-                (prUpStreamGeoInputAssetIds[index] >= 0 && HoudiniHost.isNodeValid(
-                    prUpStreamGeoInputAssetIds[index], myUpStreamGeoInputAssetValidationIds[index]));
-        }
-        else
-        {
-            return prUpStreamGeoAssets[index] == null && prUpStreamGeoInputAssetIds[index] == -1;
-        }
-    }
-
-    public void removeGeoInput(int index)
-    {
-        try
-        {
-        	if ( prUpStreamGeoAssets[ index ] != null )
-        	{
-        		prUpStreamGeoAssets[ index ].removeDownstreamAsset( this );
-                HoudiniHost.disconnectNodeInput( prNodeId, index );
-                //HoudiniHost.disconnectAssetGeometry( prAssetId, index );
-                prUpStreamGeoAssets[ index ] = null;
-        	}
-        	else if ( prUpStreamGeoInputAssetIds[ index ] >= 0 )
-        	{
-                HoudiniHost.disconnectNodeInput( prNodeId, index);
-                //HoudiniHost.disconnectAssetGeometry( prAssetId, index );
-        		HoudiniHost.destroyAsset( prUpStreamGeoInputAssetIds[ index ] );
-        		prUpStreamGeoInputAssetIds[ index ] = -1;
-        		myUpStreamGeoInputAssetValidationIds[ index ] = -1;
-        	}
-
-        	// Full value reset.
-        	prUpStreamGeoObjects[ index ] = null;
-        	prUpStreamGeoAssets[ index ] = null;
-        	prUpStreamGeoInputAssetIds[ index ] = -1;
-        	myUpStreamGeoInputAssetValidationIds[ index ] = -1;
-        }
-        catch ( HoudiniError )
-        {
-        	// Do nothing. It's usally that we we already disconnected.
-        }
-        catch ( Exception error )
-        {
-        	Debug.LogError( error.ToString() );
-        }
-    }
-
-    public void removeDownstreamAsset( HoudiniAsset asset )
+	public void removeDownstreamAsset( HoudiniAsset asset )
 	{
 		prDownStreamAssets.Remove( asset );
 	}
@@ -669,43 +441,6 @@ public abstract class HoudiniAsset : HoudiniObjectControl
 			)
 
 		{
-            // Remove this asset as transform output from the upstream assets.
-			foreach ( HoudiniAsset upstream_asset in prUpStreamTransformAssets )
-				if ( upstream_asset != null )
-					upstream_asset.removeDownstreamTransformAsset( this );
-
-			// Remove this asset as geo output from the upstream assets.
-			foreach ( HoudiniAsset upstream_asset in prUpStreamGeoAssets )
-				if ( upstream_asset != null )
-					upstream_asset.removeDownstreamAsset( this );
-
-			// Clean up any geo inputs.
-			foreach ( int asset_id in prUpStreamGeoInputAssetIds )
-			{
-				if ( asset_id >= 0 )
-				{
-					try
-					{
-						HoudiniHost.destroyAsset( asset_id );
-					}
-					catch ( HoudiniError error )
-					{
-						Debug.LogError( "Asset failed to unload input asset: " + error.ToString() );
-					}
-				}
-			}
-
-			{
-				List< HoudiniAsset > downstream_asset_list = new List< HoudiniAsset >();
-				foreach ( HoudiniAsset downstream_asset in prDownStreamTransformAssets )
-					downstream_asset_list.Add( downstream_asset );
-				foreach ( HoudiniAsset downstream_asset in downstream_asset_list )
-					downstream_asset.removeAssetAsTransformInput( this );
-			}
-
-			prUpStreamTransformAssets.Clear();
-			prDownStreamTransformAssets.Clear();
-			
 			try
 			{
 				HoudiniHost.destroyAsset( prAssetId );
@@ -825,20 +560,8 @@ public abstract class HoudiniAsset : HoudiniObjectControl
 		prPresetsMap					= null;
 
 		// Inputs ---------------------------------------------------------------------------------------------------
-        prTransformInputCount 			= 0;
-		prGeoInputCount 				= 0;
-		prGeoInputsTransformTypes		= new List< int >();
-		
-		prDownStreamTransformAssets		= new List< HoudiniAsset >();
-		prUpStreamTransformAssets 		= new List< HoudiniAsset >();
-		prUpStreamTransformObjects 		= new List< GameObject >();
-		
-		prUpStreamGeoAssets 			= new List< HoudiniAsset >();
-		prUpStreamGeoObjects 			= new List< GameObject >();
-		prUpStreamGeoInputAssetIds		= new List< int >();
-		myUpStreamGeoInputAssetValidationIds = new List< int >();
 
-        prDownStreamAssets 			    = new List< HoudiniAsset >();
+		prDownStreamAssets 			= new List< HoudiniAsset >();
 
 		// Objects --------------------------------------------------------------------------------------------------
 		
@@ -888,8 +611,6 @@ public abstract class HoudiniAsset : HoudiniObjectControl
 		prImportTemplatedGeos 			= HoudiniHost.myDefaultImportTemplatedGeos;
 		prSplitGeosByGroupOverride		= false;
 		prSplitGeosByGroup				= HoudiniHost.myDefaultSplitGeosByGroup;
-		prSplitPointsByVertexAttributeOverride = false;
-		prSplitPointsByVertexAttribute  = HoudiniHost.myDefaultSplitPointsByVertexAttributes;
 		prOmitPartNameEnumeration		= false;
 
 		prEnableLogging					= false;
@@ -1071,15 +792,12 @@ public abstract class HoudiniAsset : HoudiniObjectControl
 			prAssetValidationId			= prNodeInfo.uniqueHoudiniNodeId;
 			prNodeId					= prAssetInfo.nodeId;
 			prObjectNodeId				= prAssetInfo.objectNodeId;
-
-            prObjectCount 				= HoudiniHost.composeObjectList( prAssetId );
+			prObjectCount 				= HoudiniHost.composeObjectList( prAssetId );
 			prHandleCount 				= prAssetInfo.handleCount;
 
 			prAssetName					= prAssetInfo.name;
 			prAssetOpName				= prAssetInfo.fullOpName;
 			prAssetHelp					= prAssetInfo.helpText;
-            prTransformInputCount		= prAssetInfo.transformInputCount;
-			prGeoInputCount				= prAssetInfo.geoInputCount;
 
 			// Try to load presets.
 			if ( ( reload_asset && unload_asset_first )
@@ -1135,12 +853,8 @@ public abstract class HoudiniAsset : HoudiniObjectControl
 				progress_bar.displayProgressBar();
 				myProgressBarJustUsed = true;
 
-                // Add input fields.
-                if (is_first_time_build || !force_reconnect)
-                    initAssetConnections();
-
-                // Clean up.
-                destroyChildren( transform );
+				// Clean up.
+				destroyChildren( transform );
 				prGameObjects = new GameObject[ prObjectCount ];
 			}
 				
@@ -1161,22 +875,22 @@ public abstract class HoudiniAsset : HoudiniObjectControl
 				updateParameters( progress_bar );
 			}
 
-            // Create local object info caches (transforms need to be stored in a parallel array).
+			// Create local object info caches (transforms need to be stored in a parallel array).
 			if ( prObjects == null || prObjects.Length != prObjectCount )
 				prObjects = new HAPI_ObjectInfo[ prObjectCount ];
 			
 			if ( prObjectTransforms == null || prObjectTransforms.Length != prObjectCount )
 				prObjectTransforms = new HAPI_Transform[ prObjectCount ];
-
-            // Refresh object info arrays as they are lost after serialization.
-            HoudiniHost.composeObjectList( prAssetId );
+			
+			// Refresh object info arrays as they are lost after serialization.
+			HoudiniHost.composeObjectList( prAssetId );
 			HoudiniAssetUtility.getArray1Id(
 				prAssetId, HoudiniHost.getComposedObjectList, prObjects, prObjectCount );
 			HoudiniAssetUtility.getArray2Id(
 				prAssetId, HAPI_RSTOrder.HAPI_SRT, HoudiniHost.getComposedObjectTransforms, 
 				prObjectTransforms, prObjectCount );
 
-            bool objects_need_recook = false;
+			bool objects_need_recook = false;
 			if ( !serialization_recovery_only )
 			{
 				// Set asset's transform.
@@ -1779,74 +1493,7 @@ public abstract class HoudiniAsset : HoudiniObjectControl
 	protected abstract bool buildCreateObjects( bool reload_asset, ref HoudiniProgressBar progress_bar );
 
 	// -------------------------------------------------------------------------------------------------------------
-    protected void initAssetConnections()
-	{
-     	if (prNodeInfo.type == HAPI_NodeType.HAPI_NODETYPE_OBJ )
-		{
-			if ( prTransformInputCount > 0 && prUpStreamTransformAssets.Count <= 0 )
-				for ( int ii = 0; ii < prTransformInputCount ; ++ii )
-				{
-					prUpStreamTransformAssets.Add( null );
-					prUpStreamTransformObjects.Add( null );
-				}
-		}
-	
-		if ( prGeoInputCount > 0 && prUpStreamGeoAssets.Count <= 0 )
-			for ( int ii = 0; ii < prGeoInputCount ; ++ii )
-			{
-				prUpStreamGeoAssets.Add( null );
-				prUpStreamGeoObjects.Add( null );
-				prUpStreamGeoInputAssetIds.Add( -1 );
-				myUpStreamGeoInputAssetValidationIds.Add( -1 );
-				prGeoInputsTransformTypes.Add(1);
-			}
 
-		if (prNodeInfo.type == HAPI_NodeType.HAPI_NODETYPE_OBJ )
-			for ( int ii = 0; ii < prTransformInputCount ; ++ii )
-				if ( prUpStreamTransformAssets[ ii ] )
-					HoudiniHost.connectNodeInput( prNodeId, ii, prUpStreamTransformAssets[ii].prNodeId );
-					//HoudiniHost.connectAssetTransform( prUpStreamTransformAssets[ ii ].prAssetId, prAssetId, ii );
-
-		for ( int ii = 0; ii < prGeoInputCount ; ++ii )
-		{
-			// Reconnect the Geo inputs
-			if ( prUpStreamGeoAssets[ ii ] && ( prUpStreamGeoAssets[ ii ].prNodeId >= 0 ) )
-			{
-				HoudiniHost.connectNodeInput( prNodeId, ii, prUpStreamGeoAssets[ ii ].prNodeId );
-			}
-			else if ( prUpStreamGeoObjects[ ii ] && ( prUpStreamGeoInputAssetIds[ ii ] >= 0 ) )
-			{
-				HoudiniHost.connectNodeInput( prNodeId, ii, prUpStreamGeoInputAssetIds[ ii ] );
-			}
-
-			// Update their Transform Type
-			updateGeoInputTransformType( ii, prGeoInputsTransformTypes[ ii ] );
-		}
-
-		foreach ( HoudiniAsset downstream_asset in prDownStreamTransformAssets )
-		{
-			int index = downstream_asset.getAssetTransformConnectionIndex( this );
-			if ( index >= 0 )
-                HoudiniHost.connectNodeInput( downstream_asset.prNodeId, index, prNodeId );
-                //HoudiniHost.connectAssetTransform( prAssetId, downstream_asset.prAssetId, index );
-		}
-		
-		// Fill input names.
-		for ( int i = 0; i < prTransformInputCount; ++i )
-		{
-			string trans_input_name = HoudiniHost.getNodeInputName( prAssetId, i );
-			if ( trans_input_name == "" )
-				trans_input_name = "Transform Input #" + ( i + 1 );
-			prTransInputNames.Add( trans_input_name );
-		}
-		for ( int i = 0; i < prGeoInputCount; ++i )
-		{
-			string geo_input_name = HoudiniHost.getNodeInputName( prAssetId, i );
-			if ( geo_input_name == "" )
-				geo_input_name = "Geometry Input #" + ( i + 1 );
-			prGeoInputNames.Add( geo_input_name );
-		}
-	}
 	protected virtual void processDependentAssets(
 		bool serialization_recovery_only,
 		bool force_reconnect,
@@ -1920,21 +1567,8 @@ public abstract class HoudiniAsset : HoudiniObjectControl
 	[SerializeField] private AssetType				myAssetType;
 
 	// Inputs -------------------------------------------------------------------------------------------------------
-    	
-	[SerializeField] private int 					myTransformInputCount;
-	[SerializeField] private int					myGeoInputCount;
-	[SerializeField] private List<int>				myGeoInputsTransformTypes;
 
-	[SerializeField] private List< HoudiniAsset >	myDownStreamTransformAssets;
-	[SerializeField] private List< HoudiniAsset >	myUpStreamTransformAssets;
-	[SerializeField] private List< GameObject >		myUpStreamTransformObjects;
-	
-	[SerializeField] private List< HoudiniAsset >	myUpStreamGeoAssets;
-	[SerializeField] private List< GameObject >		myUpStreamGeoObjects;
-	[SerializeField] private List< int >			myUpStreamGeoInputAssetIds;
-	[SerializeField] private List< int >			myUpStreamGeoInputAssetValidationIds;
-
-    [SerializeField] private List< HoudiniAsset >	myDownStreamAssets;
+	[SerializeField] private List< HoudiniAsset >	myDownStreamAssets;
 
 	// Parameters ---------------------------------------------------------------------------------------------------
 
@@ -1987,8 +1621,6 @@ public abstract class HoudiniAsset : HoudiniObjectControl
 	[SerializeField] private bool					myImportTemplatedGeos;
 	[SerializeField] private bool					mySplitGeosByGroupOverride;
 	[SerializeField] private bool					mySplitGeosByGroup;
-	[SerializeField] private bool					mySplitPointsByVertexAttributesOverride;
-	[SerializeField] private bool					mySplitPointsByVertexAttributes;
 	[SerializeField] private bool					myOmitPartNameEnumeration;
 	
 	[SerializeField] private bool					myEnableLogging;

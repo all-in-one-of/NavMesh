@@ -110,15 +110,15 @@ public class HoudiniAssetGUI : Editor
 			///////////////////////////////////////////////////////////////////////
 			// Draw Game Object Controls
 
-			if ( HoudiniHost.isNodeValid( myAsset.prAssetId, myAsset.prNodeInfo.uniqueHoudiniNodeId ) &&
+			/*if ( HoudiniHost.isNodeValid( myAsset.prAssetId, myAsset.prNodeInfo.uniqueHoudiniNodeId ) &&
 				( myAsset.prTransformInputCount > 0 || myAsset.prGeoInputCount > 0 ) &&
-				 myAsset.prAssetType != HoudiniAsset.AssetType.TYPE_CURVE )
+				 myAsset.prAssetSubType != HAPI_AssetSubType.HAPI_ASSETSUBTYPE_CURVE )
 			{
 				myAsset.prShowInputControls = HoudiniGUI.foldout( "Inputs", myAsset.prShowInputControls, true );
 			
 				if ( myAsset.prShowInputControls )
 				{
-					if ( myAsset.prNodeInfo.type == HAPI_NodeType.HAPI_NODETYPE_OBJ )
+					if ( myAsset.prHAPIAssetType == HAPI_AssetType.HAPI_ASSETTYPE_OBJ )
 						for ( int ii = 0; ii < myAsset.prTransformInputCount; ++ii )
 							myParmChanges |= setTransformInput( ii );
 					
@@ -131,27 +131,18 @@ public class HoudiniAssetGUI : Editor
 						bool join_last = false;
 						bool no_label_toggle_last = true;
 
-                        GameObject temp_obj = null;
-                        HoudiniGUIParm geo_input = new HoudiniGUIParm(
+						HoudiniGUIParm geo_input = new HoudiniGUIParm(
 							"geo_input_" + input_index, myAsset.prGeoInputNames[ input_index ] );
 						Object obj = (Object) myAsset.prUpStreamGeoObjects[ input_index ];
 						myParmChanges |= HoudiniGUI.objectField(
-							ref geo_input, ref obj, typeof( GameObject ), ref join_last, ref no_label_toggle_last, null, ref temp_obj );
-
-						HoudiniGUIParm geo_input_transform_type = new HoudiniGUIParm(
-							"geo_input_transform_type_" + input_index, "Keep world transform" );
-
-						bool transform_type = myAsset.prGeoInputsTransformTypes[input_index] != 0;
-						bool TransformTypeUpdate = HoudiniGUI.toggle(ref geo_input_transform_type, ref transform_type);
-
-						bool need_build_client_side = false;
+							ref geo_input, ref obj, typeof( GameObject ), ref join_last, ref no_label_toggle_last );
+					
 						if ( myParmChanges || !myAsset.isGeoInputValid( input_index ) )
 						{
 							if ( !obj )
 							{
 								myAsset.removeGeoInput( input_index );
-								//myAsset.buildClientSide();
-								need_build_client_side = true;
+								myAsset.buildClientSide();
 							}
 							else
 							{
@@ -177,39 +168,25 @@ public class HoudiniAssetGUI : Editor
 
 								if ( asset == null )
 								{
-									// Connecting a new game object
 									myAsset.addGeoAsGeoInput( new_obj, input_index );
-									myAsset.updateGeoInputTransformType( input_index, transform_type ? 1 : 0 );
-									need_build_client_side = true;
-									//myAsset.buildClientSide();
+									myAsset.buildClientSide();
 								}
 								else if ( myAsset.prUpStreamGeoAssets[ input_index ] != asset )
 								{
-									// Connecting a new asset
 									if ( myAsset == asset )
 										Debug.LogError( "Can't connect an asset to itself!" );
 									else
 									{
 										myAsset.addAssetAsGeoInput( asset, object_index, input_index );
-										myAsset.updateGeoInputTransformType( input_index, transform_type ? 1 : 0 );
-										need_build_client_side = true;
-										//myAsset.buildClientSide();
+										myAsset.buildClientSide();
 									}
 								}
 							}
 						}
-
-						if ( TransformTypeUpdate )
-						{
-							myAsset.updateGeoInputTransformType(input_index, transform_type ? 1 : 0);
-							need_build_client_side = true;
-						}
-
-						if ( need_build_client_side )
-							myAsset.buildClientSide();
 					} // for
 				} // if
 			} // if
+			*/
 
 			// Draw Cook Log Pane
 			myAsset.prShowCookLog = HoudiniGUI.foldout( "Asset Cook Log", myAsset.prShowCookLog, true );
@@ -230,18 +207,18 @@ public class HoudiniAssetGUI : Editor
 	
 	protected bool setTransformInput( int index )
 	{
+		/*
 		if ( myAsset.prUpStreamTransformObjects == null || myAsset.prUpStreamTransformObjects.Count <= 0 )
 			return false;
 
 		bool join_last				= false;
 		bool no_label_toggle_last	= true;
-		GameObject temp_obj         = null;
 
 		HoudiniGUIParm trans_input	= new HoudiniGUIParm( "trans_input_" + index, myAsset.prTransInputNames[ index ] );
 		Object obj					= (Object) myAsset.prUpStreamTransformObjects[ index ];
 		bool changed				= HoudiniGUI.objectField( ref trans_input, ref obj, typeof( GameObject ),
-															ref join_last, ref no_label_toggle_last, null, ref temp_obj );
-
+															ref join_last, ref no_label_toggle_last );
+		
 		if ( changed )
 		{
 			if ( !obj )
@@ -263,6 +240,8 @@ public class HoudiniAssetGUI : Editor
 		}
 		
 		return changed;
+		*/
+		return false;
 	}
 
 	protected void drawLicenseLogo()
